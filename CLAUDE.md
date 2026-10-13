@@ -53,8 +53,10 @@
   - piste B « Conversation » validée par l'utilisateur ;
   - site Next.js : panneau de marque, conversation (moteur de scénario, bulles texte, photo, comparateur, prix, carte de demande), pied de page, favicon, image de partage (conversation en cours) ;
   - parcours complet vérifié en desktop et en mobile (accueil, visite, prix, réservation jusqu'au lien WhatsApp prérédigé) ; lint et build OK ;
+  - Lighthouse mobile sur la démo : performance 96 à 98, accessibilité 100, bonnes pratiques 100 ; LCP 2,0 à 2,3 s ; CLS 0 ;
   - repo GitHub créé et démo déployée sur Vercel.
 - Décisions : pas de librairie d'animation (voir les exceptions).
+- Point ouvert : `vercel git connect` attend que l'utilisateur autorise le repo dans l'application GitHub de Vercel ; d'ici là, redéployer avec `vercel --prod --yes` après chaque push.
 - Prochaine étape : l'utilisateur envoie le lien au propriétaire. Ensuite, intégrer les infos manquantes (quartier, tarifs par type et par durée, rôle du 05 46 82 34 44, logo vectoriel, photos HD) dans `src/content/site.ts`, et ajouter des sujets à la conversation si besoin (« C'est où ? » dès que le quartier est connu).
 
 ### 2026-10-13 (1)
