@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Light Résidence · Piste A · Interrupteur</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300..700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* Tokens du theme - piste A */
+  :root {
+    --graphite: #0b0d12;
+    --panneau: #141720;
+    --panneau-2: #1b1f2a;
+    --ligne: rgba(238, 240, 245, .09);
+    --texte: #eef0f5;
+    --doux: rgba(238, 240, 245, .62);
+    --or: #ecc23a;
+    --neon: #4c7dff;          /* couleur de l'ambiance active, animee par GSAP */
+    --lumiere: 0;             /* 0 = eteint, 1 = allume */
+
+    --f-ui: "Sora", system-ui, sans-serif;
+    --f-mono: "IBM Plex Mono", ui-monospace, monospace;
+    --gouttiere: clamp(16px, 4vw, 48px);
+    --rayon: 22px;
+    --ease: cubic-bezier(.22, 1, .36, 1);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html.lenis, html.lenis body { height: auto; }
+  body { background: var(--graphite); color: var(--texte); font-family: var(--f-ui); line-height: 1.55; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  img { display: block; max-width: 100%; }
+  .mono { font-family: var(--f-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+  :focus-visible { outline: 2px solid var(--neon); outline-offset: 3px; }
+
+  /* Barre du haut */
+  .barre { position: fixed; inset: 0 0 auto; z-index: 40; display: flex; align-items: center; justify-content: space-between; padding: 14px var(--gouttiere); background: linear-gradient(var(--graphite), transparent); opacity: 0; translate: 0 -20px; pointer-events: none; transition: opacity .8s var(--ease), translate .8s var(--ease); }
+  .allume .barre { opacity: 1; translate: 0 0; pointer-events: auto; }
+  .marque { display: flex; align-items: center; gap: 12px; }
+  .marque svg { width: 58px; }
+  .marque b { font-weight: 600; letter-spacing: .14em; text-transform: uppercase; font-size: 14px; }
+  .barre__tel { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 999px; border: 1px solid var(--ligne); background: rgba(20, 23, 32, .7); font-size: 14px; }
+  .point { width: 8px; height: 8px; border-radius: 50%; background: var(--neon); box-shadow: 0 0 12px var(--neon); }
+
+  /* Intro : la piece dans le noir */
+  .intro { position: relative; min-height: 100svh; display: grid; place-items: center; overflow: hidden; isolation: isolate; text-align: center; padding: 90px var(--gouttiere) 60px; }
+  .intro__photo { position: absolute; inset: 0; z-index: -2; }
+  .intro__photo img { width: 100%; height: 100%; object-fit: cover; filter: brightness(calc(.05 + var(--lumiere) * 1)) saturate(calc(.3 + var(--lumiere) * .9)) blur(calc((1 - var(--lumiere)) * 6px)); transform: scale(1.06); }
+  .intro__voile { position: absolute; inset: 0; z-index: -1; background: radial-gradient(70% 60% at 50% 45%, rgba(11, 13, 18, calc(.3 - var(--lumiere) * .2)), rgba(11, 13, 18, calc(.92 - var(--lumiere) * .35))); }
+  .led { position: absolute; left: 0; right: 0; top: 76px; width: 100%; height: 40px; z-index: -1; overflow: visible; }
+  .led path { stroke: var(--neon); stroke-width: 4; fill: none; filter: drop-shadow(0 0 6px var(--neon)) drop-shadow(0 0 18px var(--neon)); }
+  .intro__kicker { color: var(--doux); }
+  .intro__titre { font-weight: 300; font-size: clamp(36px, 6.4vw, 92px); line-height: 1.02; letter-spacing: -.03em; margin: 18px auto 0; max-width: 13ch; color: rgba(238, 240, 245, calc(.22 + var(--lumiere) * .78)); text-shadow: 0 0 calc(var(--lumiere) * 40px) color-mix(in srgb, var(--neon) 60%, transparent); }
+  .intro__titre b { font-weight: 600; }
+  .interrupteur { margin: clamp(32px, 6vh, 56px) auto 0; display: grid; justify-items: center; gap: 16px; }
+  .plaque { position: relative; width: 112px; height: 168px; border-radius: 26px; background: linear-gradient(160deg, #262a35, #12141b); border: 1px solid rgba(255, 255, 255, .08); box-shadow: 0 30px 60px rgba(0, 0, 0, .55), inset 0 1px 0 rgba(255, 255, 255, .08); display: grid; place-items: center; }
+  .bascule { width: 56px; height: 100px; border-radius: 16px; background: linear-gradient(#2f3441, #1a1d26); box-shadow: inset 0 -40px 30px rgba(0, 0, 0, .35), 0 10px 18px rgba(0, 0, 0, .5); position: relative; transition: transform .45s var(--ease), background .45s; transform: perspective(300px) rotateX(18deg); }
+  .bascule::after { content: ""; position: absolute; left: 50%; top: 16px; width: 16px; height: 4px; border-radius: 4px; translate: -50% 0; background: rgba(238, 240, 245, .25); transition: background .4s, box-shadow .4s, top .45s var(--ease); }
+  .allume .bascule { transform: perspective(300px) rotateX(-18deg); background: linear-gradient(#1a1d26, #2f3441); }
+  .allume .bascule::after { top: 80px; background: var(--neon); box-shadow: 0 0 14px var(--neon); }
+  .interrupteur__aide { display: flex; align-items: center; gap: 10px; color: var(--doux); }
+  .eteint .interrupteur__aide .point { animation: pouls 1.6s ease-in-out infinite; background: var(--or); box-shadow: 0 0 12px var(--or); }
+  @keyframes pouls { 50% { opacity: .25; } }
+  .intro__suite { position: absolute; bottom: 22px; left: 50%; translate: -50% 0; opacity: 0; transition: opacity .8s .6s; }
+  .allume .intro__suite { opacity: 1; }
+  .flash { position: fixed; inset: 0; z-index: 60; pointer-events: none; background: radial-gradient(circle at 50% 60%, rgba(255, 255, 255, .55), transparent 60%); opacity: 0; }
+
+  /* Tableau de bord */
+  .tableau { padding: clamp(64px, 9vw, 120px) var(--gouttiere); max-width: 1360px; margin: 0 auto; }
+  .tableau__tete { display: flex; justify-content: space-between; align-items: end; gap: 20px; flex-wrap: wrap; margin-bottom: 28px; }
+  .tableau__tete h2 { font-weight: 300; font-size: clamp(30px, 4vw, 56px); letter-spacing: -.03em; line-height: 1.05; }
+  .tableau__tete h2 b { font-weight: 600; color: var(--neon); transition: color .6s; }
+  .grille { display: grid; grid-template-columns: 1.25fr 1fr; gap: 16px; }
+  .ecran { position: relative; border-radius: var(--rayon); overflow: hidden; background: #000; min-height: 560px; border: 1px solid var(--ligne); box-shadow: 0 0 80px -20px var(--neon); transition: box-shadow .8s; }
+  .ecran img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .ecran__legende { position: absolute; left: 16px; right: 16px; bottom: 16px; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 16px; background: rgba(11, 13, 18, .78); backdrop-filter: blur(10px); }
+  .ecran__legende b { display: block; font-weight: 600; font-size: 16px; }
+  .ecran__pastille { position: absolute; top: 16px; left: 16px; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; background: rgba(11, 13, 18, .7); }
+  .panneau { display: grid; gap: 16px; align-content: start; }
+  .carte { border-radius: var(--rayon); background: var(--panneau); border: 1px solid var(--ligne); padding: 20px; }
+  .carte__tete { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; color: var(--doux); }
+  .ambiances { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .ambiance { display: grid; justify-items: center; gap: 10px; padding: 16px 8px; border-radius: 16px; background: var(--panneau-2); border: 1px solid transparent; transition: border-color .4s, background .4s; font-size: 14px; }
+  .ambiance i { width: 44px; height: 44px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 4px rgba(255, 255, 255, .04); transition: box-shadow .4s; }
+  .ambiance[aria-pressed="true"] { border-color: var(--c); background: color-mix(in srgb, var(--c) 10%, var(--panneau-2)); }
+  .ambiance[aria-pressed="true"] i { box-shadow: 0 0 22px var(--c), 0 0 0 4px color-mix(in srgb, var(--c) 30%, transparent); }
+  .segments { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .segments label { position: relative; }
+  .segments input { position: absolute; opacity: 0; }
+  .segments span { display: block; padding: 13px 14px; border-radius: 14px; background: var(--panneau-2); border: 1px solid transparent; font-size: 14px; transition: border-color .3s, color .3s; }
+  .segments input:checked + span { border-color: var(--neon); color: #fff; box-shadow: inset 0 0 0 1px var(--neon); }
+  .segments input:focus-visible + span { outline: 2px solid var(--neon); outline-offset: 2px; }
+  .segments--3 { grid-template-columns: repeat(3, 1fr); }
+  .segments--3 span { text-align: center; }
+  .carte--tarif { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+  .compteur { font-family: var(--f-mono); font-weight: 500; font-size: clamp(30px, 3vw, 40px); letter-spacing: -.02em; color: #fff; }
+  .compteur small { font-size: 13px; color: var(--doux); margin-left: 6px; }
+  .reserver { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 22px; border-radius: var(--rayon); background: var(--neon); color: #08090c; font-weight: 600; transition: background .6s, transform .3s var(--ease); }
+  .reserver:hover { transform: translateY(-2px); }
+  .reserver small { display: block; font-weight: 400; font-size: 13px; opacity: .75; }
+  .reserver svg { width: 26px; height: 26px; flex: none; }
+
+  /* Etat de la residence (indicateurs) */
+  .etats { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+  .etat { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 999px; background: var(--panneau); border: 1px solid var(--ligne); font-size: 14px; }
+  .etat .point { background: #2ef0a0; box-shadow: 0 0 10px #2ef0a0; }
+
+  /* Scenes */
+  .scenes { padding: 0 var(--gouttiere) clamp(64px, 9vw, 120px); max-width: 1360px; margin: 0 auto; }
+  .scenes h2 { font-weight: 300; font-size: clamp(26px, 3vw, 40px); letter-spacing: -.02em; margin-bottom: 20px; }
+  .scenes__rail { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .scene { position: relative; border-radius: var(--rayon); overflow: hidden; aspect-ratio: 3 / 4; border: 1px solid var(--ligne); text-align: left; }
+  .scene img { width: 100%; height: 100%; object-fit: cover; transition: transform 1s var(--ease); }
+  .scene:hover img { transform: scale(1.05); }
+  .scene span { position: absolute; left: 12px; right: 12px; bottom: 12px; padding: 10px 12px; border-radius: 12px; background: rgba(11, 13, 18, .75); backdrop-filter: blur(8px); font-size: 14px; }
+
+  /* Planche DA */
+  .planche { padding: clamp(56px, 8vw, 110px) var(--gouttiere); background: #f2f3f6; color: #0b0d12; }
+  .planche h3 { font-weight: 300; font-size: clamp(28px, 3.6vw, 48px); letter-spacing: -.03em; margin: 10px 0 30px; }
+  .nuancier { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+  .pastille { border-radius: 16px; overflow: hidden; background: #fff; border: 1px solid #e3e5ea; }
+  .pastille div { height: 80px; }
+  .pastille p { padding: 10px 12px; font-size: 12px; }
+  .pastille b { display: block; }
+  .bloc { margin-top: 12px; padding: 24px; border-radius: 18px; background: #fff; border: 1px solid #e3e5ea; max-width: 1000px; }
+  .bloc p + p { margin-top: 10px; }
+  .pied { padding: 40px var(--gouttiere) 90px; display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; color: var(--doux); font-size: 14px; border-top: 1px solid var(--ligne); }
+  .badge { position: fixed; left: 12px; bottom: 12px; z-index: 70; padding: 8px 14px; border-radius: 999px; font-size: 11px; background: #000; color: var(--or); border: 1px solid rgba(236, 194, 58, .4); }
+  .badge a { color: #fff; text-decoration: underline; margin-left: 6px; }
+
+  /* Barre de reservation collante (mobile) */
+  .colle { display: none; }
+  @media (max-width: 900px) {
+    .grille { grid-template-columns: 1fr; }
+    .ecran { min-height: 0; aspect-ratio: 4 / 4.4; max-height: 56svh; }
+    .scenes__rail { grid-template-columns: repeat(4, 72%); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+    .scene { scroll-snap-align: start; }
+    .colle { display: flex; position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 50; translate: 0 140%; transition: translate .6s var(--ease); }
+    .colle.visible { translate: 0 0; }
+    .colle .reserver { flex: 1; padding: 14px 18px; }
+    .badge { bottom: auto; top: 70px; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body class="eteint">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <!-- Toits du logo, redessines (a remplacer par le vectoriel officiel) -->
+  <symbol id="maisons" viewBox="0 0 240 120">
+    <path d="M20 44a14 14 0 0 1 28 0Z" fill="#ecc23a"/>
+    <path d="M26 26c-4-6 2-9 0-15M34 24c-4-6 2-9 0-15M42 26c-4-6 2-9 0-15" stroke="#ecc23a" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M14 96 66 44l52 52" stroke="#ecc23a" stroke-width="8" fill="none"/>
+    <path d="M84 72 134 14l72 84" stroke="currentColor" stroke-width="10" fill="none"/>
+    <rect x="104" y="22" width="10" height="24" fill="currentColor"/>
+    <path d="M168 52l28-24 38 42" stroke="#ecc23a" stroke-width="6" fill="none"/>
+    <g fill="#ecc23a"><rect x="56" y="64" width="9" height="9"/><rect x="67" y="64" width="9" height="9"/><rect x="56" y="75" width="9" height="9"/><rect x="67" y="75" width="9" height="9"/><rect x="128" y="56" width="9" height="9"/><rect x="139" y="56" width="9" height="9"/><rect x="128" y="67" width="9" height="9"/><rect x="139" y="67" width="9" height="9"/></g>
+    <path d="M0 106C70 86 150 92 240 104" stroke="currentColor" stroke-width="7" fill="none"/>
+    <path d="M24 116C96 102 166 104 232 112" stroke="#ecc23a" stroke-width="4" fill="none"/>
+  </symbol>
+  <symbol id="i-wa" viewBox="0 0 24 24"><path d="M4 18.5 5.2 15A8 8 0 1 1 8.6 18.6Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 10.5c.5 1.8 2 3.3 3.8 3.9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+</svg>
+
+<div class="flash" aria-hidden="true"></div>
+
+<header class="barre">
+  <a class="marque" href="#intro" aria-label="Light Résidence"><svg aria-hidden="true" style="color:#eef0f5"><use href="#maisons"/></svg><b>Light Résidence</b></a>
+  <a class="barre__tel" href="https://wa.me/2250759573929"><span class="point"></span>07 59 57 39 29</a>
+</header>
+
+<section class="intro" id="intro">
+  <div class="intro__photo"><img src="assets/salon-plafond-led-bleu.jpg" alt="Salon de Light Résidence : canapés en velours bleu et plafond éclairé par des LED bleues"></div>
+  <div class="intro__voile"></div>
+  <svg class="led" viewBox="0 0 1000 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 20 H1000"/></svg>
+  <div>
+    <p class="mono intro__kicker">Light Résidence · Appartements meublés · Abidjan</p>
+    <h1 class="intro__titre">Le confort poussé <b>à son comble.</b></h1>
+    <button class="interrupteur" type="button" aria-pressed="false" aria-label="Allumer la lumière">
+      <span class="plaque"><span class="bascule"></span></span>
+      <span class="interrupteur__aide mono"><span class="point"></span><span class="aide__txt">Allumez la lumière</span></span>
+    </button>
+  </div>
+  <p class="intro__suite mono">Composez votre séjour ↓</p>
+</section>
+
+<section class="tableau" id="reserver" aria-labelledby="titre-tableau">
+  <div class="tableau__tete">
+    <h2 id="titre-tableau">Votre séjour,<br><b>réglé comme chez vous.</b></h2>
+    <p class="mono" style="color:var(--doux)">Équipé · calme · propre · paisible · sécurisé</p>
+  </div>
+  <div class="grille">
+    <div class="ecran" aria-live="polite">
+      <img class="ecran__img" src="assets/salon-plafond-led-bleu.jpg" alt="Salon avec plafond LED bleu">
+      <img class="ecran__img" src="assets/salon-plafond-led-bleu.jpg" alt="" style="opacity:0">
+      <span class="ecran__pastille mono"><span class="point"></span><span class="pastille__txt">Ambiance bleu nuit</span></span>
+      <div class="ecran__legende"><div><span class="mono" style="color:var(--doux)">Pièce</span><b class="legende__piece">Le salon</b></div><span class="mono legende__type">2 pièces</span></div>
+    </div>
+    <div class="panneau">
+      <div class="carte">
+        <div class="carte__tete"><span class="mono">Ambiance</span><span class="mono">LED</span></div>
+        <div class="ambiances">
+          <button class="ambiance" type="button" aria-pressed="false" data-ambiance="jour" style="--c:#f3d9a4"><i></i>Jour</button>
+          <button class="ambiance" type="button" aria-pressed="true" data-ambiance="bleu" style="--c:#4c7dff"><i></i>Bleu nuit</button>
+          <button class="ambiance" type="button" aria-pressed="false" data-ambiance="vert" style="--c:#2ef0a0"><i></i>Vert lagon</button>
+        </div>
+      </div>
+      <fieldset class="carte" style="border:1px solid var(--ligne)">
+        <legend class="mono" style="color:var(--doux);float:left;margin-bottom:14px">Logement</legend>
+        <div class="segments" style="clear:both">
+          <label><input type="radio" name="type" value="Studio américain"><span>Studio américain</span></label>
+          <label><input type="radio" name="type" value="2 pièces" checked><span>2 pièces</span></label>
+          <label><input type="radio" name="type" value="3 pièces"><span>3 pièces</span></label>
+          <label><input type="radio" name="type" value="Villa"><span>Villa</span></label>
+        </div>
+      </fieldset>
+      <fieldset class="carte" style="border:1px solid var(--ligne)">
+        <legend class="mono" style="color:var(--doux);float:left;margin-bottom:14px">Séjour</legend>
+        <div class="segments segments--3" style="clear:both">
+          <label><input type="radio" name="duree" value="court séjour" checked><span>Court</span></label>
+          <label><input type="radio" name="duree" value="moyen séjour"><span>Moyen</span></label>
+          <label><input type="radio" name="duree" value="long séjour"><span>Long</span></label>
+        </div>
+      </fieldset>
+      <div class="carte carte--tarif">
+        <div><span class="mono" style="color:var(--doux)">À partir de</span><p class="compteur"><span class="chiffre">20 000</span><small>F / 24 h</small></p></div>
+        <span class="mono" style="color:var(--doux);text-align:right">Tarif exact<br>sur WhatsApp</span>
+      </div>
+      <a class="reserver" href="#"><span>Réserver sur WhatsApp<small class="resume">2 pièces · court séjour</small></span><svg aria-hidden="true"><use href="#i-wa"/></svg></a>
+    </div>
+  </div>
+  <div class="etats">
+    <span class="etat"><span class="point"></span>Équipé</span>
+    <span class="etat"><span class="point"></span>Calme</span>
+    <span class="etat"><span class="point"></span>Propre</span>
+    <span class="etat"><span class="point"></span>Paisible</span>
+    <span class="etat"><span class="point"></span>Sécurisé</span>
+  </div>
+</section>
+
+<section class="scenes" aria-labelledby="titre-scenes">
+  <h2 id="titre-scenes">Scènes de la résidence</h2>
+  <div class="scenes__rail">
+    <button class="scene" type="button" data-ambiance="bleu"><img src="assets/salon-plafond-led-bleu.jpg" alt="Salon, plafond LED bleu"><span>Salon · bleu nuit</span></button>
+    <button class="scene" type="button" data-ambiance="vert"><img src="assets/salle-a-manger-led-verte.jpg" alt="Salle à manger éclairée en vert"><span>Salle à manger · vert lagon</span></button>
+    <button class="scene" type="button" data-ambiance="jour"><img src="assets/salle-a-manger-jour.jpg" alt="Salle à manger en lumière du jour"><span>Salle à manger · jour</span></button>
+    <button class="scene" type="button" data-ambiance="bleu"><img src="assets/salon-led-bleu-salle-a-manger.jpg" alt="Salon et salle à manger sous les LED bleues et vertes" style="object-position:30% 50%"><span>Séjour ouvert</span></button>
+  </div>
+</section>
+
+<div class="colle"><a class="reserver" href="#"><span>Réserver<small class="resume">2 pièces · court séjour</small></span><svg aria-hidden="true"><use href="#i-wa"/></svg></a></div>
+
+<section class="planche">
+  <p class="mono">Planche de direction artistique · Piste A</p>
+  <h3>Interrupteur : le site comme une maison connectée</h3>
+  <div class="nuancier">
+    <div class="pastille"><div style="background:#0b0d12"></div><p><b>Graphite</b>#0B0D12 · fond</p></div>
+    <div class="pastille"><div style="background:#141720"></div><p><b>Panneau</b>#141720 · cartes</p></div>
+    <div class="pastille"><div style="background:#ecc23a"></div><p><b>Or</b>#ECC23A · le logo</p></div>
+    <div class="pastille"><div style="background:#4c7dff"></div><p><b>Bleu nuit</b>#4C7DFF · LED</p></div>
+    <div class="pastille"><div style="background:#2ef0a0"></div><p><b>Vert lagon</b>#2EF0A0 · LED</p></div>
+    <div class="pastille"><div style="background:#f3d9a4"></div><p><b>Jour</b>#F3D9A4 · lumière chaude</p></div>
+  </div>
+  <div class="bloc">
+    <p class="mono">Expérience</p>
+    <p>On arrive dans une pièce plongée dans le noir. Un interrupteur attend d'être actionné : la LED du plafond se trace, le salon s'allume, le titre s'éclaire. Le site devient ensuite une interface de maison connectée : on choisit l'ambiance lumineuse (les vraies photos de la résidence, de jour, en bleu, en vert), le logement et la durée. Tout le site prend la couleur de l'ambiance choisie, et le message WhatsApp se compose avec ces réglages.</p>
+    <p>Typographies : Sora (interface, en léger et en gras) et IBM Plex Mono pour les « relevés » (tarif, étiquettes). Pas de longue page : un écran d'accueil, un tableau de bord, des scènes.</p>
+  </div>
+</section>
+
+<footer class="pied"><span>Light Résidence · Abidjan · WhatsApp 07 59 57 39 29</span><span>Proposition de site réalisée par Digifaz</span></footer>
+<p class="badge">Maquette · Piste A · Interrupteur<a href="index.html">Toutes les pistes</a></p>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/DrawSVGPlugin.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js"></script>
+<script>
+  gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin);
+  const reduit = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const racine = document.documentElement;
+  const corps = document.body;
+
+  if (!reduit) {
+    const lenis = new Lenis({ autoRaf: false, lerp: 0.1 });
+    lenis.on("scroll", ScrollTrigger.update);
+    gsap.ticker.add((t) => lenis.raf(t * 1000));
+    gsap.ticker.lagSmoothing(0);
+  }
+
+  // Ambiances : vraies photos de la residence et couleur de LED associee
+  const AMBIANCES = {
+    jour: { neon: "#f3d9a4", photo: "assets/salle-a-manger-jour.jpg", alt: "Salle à manger en lumière du jour", piece: "La salle à manger", nom: "Ambiance jour" },
+    bleu: { neon: "#4c7dff", photo: "assets/salon-plafond-led-bleu.jpg", alt: "Salon avec plafond LED bleu", piece: "Le salon", nom: "Ambiance bleu nuit" },
+    vert: { neon: "#2ef0a0", photo: "assets/salle-a-manger-led-verte.jpg", alt: "Salle à manger éclairée en vert", piece: "La salle à manger", nom: "Ambiance vert lagon" },
+  };
+  let ambianceActive = "bleu";
+  const imgs = document.querySelectorAll(".ecran__img");
+  let visible = 0;
+
+  function choisirAmbiance(cle) {
+    if (cle === ambianceActive) return;
+    ambianceActive = cle;
+    const a = AMBIANCES[cle];
+    document.querySelectorAll(".ambiance").forEach((b) => b.setAttribute("aria-pressed", b.dataset.ambiance === cle));
+    document.querySelector(".pastille__txt").textContent = a.nom;
+    document.querySelector(".legende__piece").textContent = a.piece;
+    // Fondu entre les deux images empilees
+    const suivante = imgs[1 - visible];
+    suivante.src = a.photo; suivante.alt = a.alt;
+    gsap.to(suivante, { opacity: 1, duration: reduit ? 0 : 0.9, ease: "power2.inOut" });
+    gsap.to(imgs[visible], { opacity: 0, duration: reduit ? 0 : 0.9, ease: "power2.inOut" });
+    imgs[visible].alt = "";
+    visible = 1 - visible;
+    gsap.to(racine, { "--neon": a.neon, duration: reduit ? 0 : 0.8 });
+    majReservation();
+  }
+  document.querySelectorAll("[data-ambiance]").forEach((b) => b.addEventListener("click", () => {
+    choisirAmbiance(b.dataset.ambiance);
+    if (b.classList.contains("scene")) document.querySelector("#reserver").scrollIntoView({ behavior: reduit ? "auto" : "smooth" });
+  }));
+
+  // Message WhatsApp compose avec les reglages
+  function majReservation() {
+    const type = document.querySelector("input[name=type]:checked").value;
+    const duree = document.querySelector("input[name=duree]:checked").value;
+    document.querySelectorAll(".resume").forEach((r) => (r.textContent = `${type} · ${duree}`));
+    document.querySelector(".legende__type").textContent = type;
+    const msg = `Bonjour Light Résidence, je souhaite réserver : ${type}, ${duree}.`;
+    document.querySelectorAll(".reserver").forEach((l) => (l.href = "https://wa.me/2250759573929?text=" + encodeURIComponent(msg)));
+  }
+  document.querySelectorAll("input[type=radio]").forEach((i) => i.addEventListener("change", () => {
+    majReservation();
+    if (!reduit) gsap.fromTo(".resume", { y: 6, opacity: 0 }, { y: 0, opacity: 0.75, duration: 0.4 });
+  }));
+  majReservation();
+
+  // ---------- Signature : l'interrupteur ----------
+  const bouton = document.querySelector(".interrupteur");
+  const etat = { lumiere: 0 };
+  function basculer() {
+    const allumer = !corps.classList.contains("allume");
+    corps.classList.toggle("allume", allumer);
+    corps.classList.toggle("eteint", !allumer);
+    bouton.setAttribute("aria-pressed", allumer);
+    bouton.setAttribute("aria-label", allumer ? "Éteindre la lumière" : "Allumer la lumière");
+    document.querySelector(".aide__txt").textContent = allumer ? "Lumière allumée" : "Allumez la lumière";
+    const d = reduit ? 0 : 1;
+    gsap.to(etat, { lumiere: allumer ? 1 : 0, duration: 1.4 * d, ease: allumer ? "expo.out" : "power2.inOut", onUpdate: () => racine.style.setProperty("--lumiere", etat.lumiere) });
+    gsap.to(".led path", { drawSVG: allumer ? "0% 100%" : "50% 50%", duration: 1.1 * d, ease: "power3.inOut" });
+    if (allumer && !reduit) gsap.fromTo(".flash", { opacity: 0 }, { opacity: 1, duration: 0.08, yoyo: true, repeat: 1, ease: "none" });
+  }
+  gsap.set(".led path", { drawSVG: "50% 50%" });
+  bouton.addEventListener("click", basculer);
+
+  // Si on fait defiler sans allumer, la lumiere s'allume d'elle-meme
+  ScrollTrigger.create({ trigger: ".tableau", start: "top 80%", onEnter: () => { if (!corps.classList.contains("allume")) basculer(); } });
+
+  if (!reduit) {
+    gsap.from(".panneau > *, .ecran", { y: 40, opacity: 0, duration: 1, ease: "expo.out", stagger: 0.08, scrollTrigger: { trigger: ".tableau", start: "top 70%" } });
+    gsap.from(".etat", { scale: 0.8, opacity: 0, duration: 0.6, ease: "back.out(2)", stagger: 0.06, scrollTrigger: { trigger: ".etats", start: "top 90%" } });
+  }
+  // Barre de reservation collante sur mobile, visible apres l'intro
+  ScrollTrigger.create({ trigger: ".tableau", start: "top 40%", end: "max", toggleClass: { targets: ".colle", className: "visible" } });
+</script>
+</body>
+</html>

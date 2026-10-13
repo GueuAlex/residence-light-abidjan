@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Light Résidence · Piste B · Conversation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gloock&family=Hanken+Grotesk:wght@400..700&display=swap" rel="stylesheet">
+<style>
+  /* Tokens du theme - piste B */
+  :root {
+    --sable: #f6f1e7;
+    --papier: #fffdf8;
+    --encre: #141414;
+    --gris: #6d675d;
+    --or: #ecc23a;
+    --or-fonce: #8a6a00;
+    --ligne: rgba(20, 20, 20, .1);
+
+    --f-titre: "Gloock", Georgia, serif;
+    --f-ui: "Hanken Grotesk", system-ui, sans-serif;
+    --ease: cubic-bezier(.34, 1.4, .64, 1);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--sable); color: var(--encre); font-family: var(--f-ui); line-height: 1.5; -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  img { display: block; max-width: 100%; }
+  :focus-visible { outline: 2px solid var(--encre); outline-offset: 3px; }
+
+  .app { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); min-height: 100svh; }
+
+  /* Panneau de marque (ordinateur) */
+  .marque { position: sticky; top: 0; height: 100svh; display: flex; flex-direction: column; justify-content: space-between; padding: clamp(28px, 4vw, 56px); overflow: hidden; }
+  .marque__logo { width: min(280px, 60%); background: #fff; border-radius: 20px; padding: 14px 18px; box-shadow: 0 10px 30px rgba(20, 20, 20, .06); }
+  .marque h1 { font-family: var(--f-titre); font-weight: 400; font-size: clamp(44px, 5.4vw, 88px); line-height: .98; letter-spacing: -.01em; max-width: 9ch; }
+  .marque h1 em { font-style: normal; background: linear-gradient(transparent 62%, var(--or) 62%, var(--or) 92%, transparent 92%); }
+  .marque__sous { margin-top: 18px; max-width: 380px; color: var(--gris); font-size: 17px; }
+  .defile { overflow: hidden; border-block: 1px solid var(--ligne); padding: 12px 0; mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); }
+  .defile__piste { display: flex; gap: 28px; width: max-content; animation: defile 26s linear infinite; }
+  .defile__piste span { white-space: nowrap; font-family: var(--f-titre); font-size: 22px; }
+  .defile__piste span::after { content: "·"; margin-left: 28px; color: var(--or-fonce); }
+  @keyframes defile { to { transform: translateX(-50%); } }
+  .marque__bas { display: flex; justify-content: space-between; align-items: end; gap: 16px; font-size: 14px; color: var(--gris); }
+
+  /* Conversation */
+  .chat { position: relative; display: flex; flex-direction: column; height: 100svh; position: sticky; top: 0; background: var(--papier); border-left: 1px solid var(--ligne); }
+  .chat__tete { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--ligne); background: rgba(255, 253, 248, .92); backdrop-filter: blur(8px); z-index: 2; }
+  .avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--encre); display: grid; place-items: center; flex: none; }
+  .avatar svg { width: 30px; }
+  .chat__tete b { display: block; font-size: 16px; }
+  .chat__tete small { color: var(--gris); font-size: 13px; }
+  .chat__tete a { margin-left: auto; padding: 9px 14px; border-radius: 999px; border: 1px solid var(--ligne); font-size: 14px; font-weight: 600; }
+  .fil { flex: 1; overflow-y: auto; padding: 24px 20px 12px; display: flex; flex-direction: column; gap: 8px; scroll-behavior: smooth; background-image: radial-gradient(rgba(20, 20, 20, .05) 1px, transparent 1.2px); background-size: 18px 18px; }
+  .date { align-self: center; font-size: 12px; color: var(--gris); padding: 4px 12px; border-radius: 999px; background: var(--sable); margin-bottom: 8px; }
+  .bulle { max-width: min(78%, 440px); padding: 11px 15px; border-radius: 20px 20px 20px 6px; background: #fff; box-shadow: 0 2px 0 rgba(20, 20, 20, .06), 0 8px 24px rgba(20, 20, 20, .05); font-size: 16px; transform-origin: 0 100%; animation: pop .45s var(--ease) both; }
+  .bulle--moi { align-self: flex-end; background: var(--encre); color: var(--sable); border-radius: 20px 20px 6px 20px; transform-origin: 100% 100%; }
+  .bulle--media { padding: 6px; }
+  .bulle--media img { border-radius: 15px; width: 100%; aspect-ratio: 4 / 4.6; object-fit: cover; }
+  .bulle--media figcaption { padding: 8px 8px 4px; font-size: 14px; color: var(--gris); }
+  .bulle--prix { padding: 18px 20px; border-left: 4px solid var(--or); }
+  .bulle--prix .grand { font-family: var(--f-titre); font-size: 46px; line-height: 1; margin: 6px 0; }
+  .bulle--prix small { color: var(--gris); }
+  .bulle--carte { padding: 18px; width: min(78%, 440px); }
+  .bulle--carte h3 { font-family: var(--f-titre); font-weight: 400; font-size: 26px; margin-bottom: 10px; }
+  .bulle--carte dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; font-size: 15px; margin-bottom: 14px; }
+  .bulle--carte dt { color: var(--gris); }
+  .envoyer { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; border-radius: 14px; background: var(--or); font-weight: 700; }
+  .envoyer svg { width: 20px; height: 20px; }
+  @keyframes pop { from { opacity: 0; transform: scale(.82) translateY(10px); } }
+  .ecrit { display: inline-flex; gap: 5px; padding: 14px 16px; }
+  .ecrit i { width: 7px; height: 7px; border-radius: 50%; background: var(--gris); animation: saut 1s infinite; }
+  .ecrit i:nth-child(2) { animation-delay: .15s; } .ecrit i:nth-child(3) { animation-delay: .3s; }
+  @keyframes saut { 30% { transform: translateY(-5px); opacity: .5; } }
+
+  /* Comparateur jour / LED dans une bulle */
+  .compare { position: relative; border-radius: 15px; overflow: hidden; aspect-ratio: 3 / 4; touch-action: none; user-select: none; }
+  .compare img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+  .compare__haut { clip-path: inset(0 0 0 var(--pos, 50%)); }
+  .compare__ligne { position: absolute; top: 0; bottom: 0; left: var(--pos, 50%); width: 2px; background: #fff; translate: -1px 0; pointer-events: none; }
+  .compare__poignee { position: absolute; top: 50%; left: var(--pos, 50%); width: 44px; height: 44px; translate: -50% -50%; border-radius: 50%; background: #fff; display: grid; place-items: center; box-shadow: 0 6px 18px rgba(0, 0, 0, .3); font-size: 13px; font-weight: 700; pointer-events: none; }
+  .compare__etiq { position: absolute; top: 10px; padding: 4px 10px; border-radius: 999px; background: rgba(20, 20, 20, .7); color: #fff; font-size: 12px; }
+  .compare input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: ew-resize; }
+
+  /* Reponses rapides */
+  .reponses { display: flex; gap: 8px; overflow-x: auto; padding: 12px 20px calc(14px + env(safe-area-inset-bottom)); border-top: 1px solid var(--ligne); background: var(--papier); scrollbar-width: none; }
+  .reponse { flex: none; padding: 11px 16px; border-radius: 999px; border: 1.5px solid var(--encre); font-weight: 600; font-size: 15px; background: #fff; transition: background .2s, color .2s; animation: pop .4s var(--ease) both; }
+  .reponse:hover { background: var(--encre); color: var(--sable); }
+  .reponse--or { background: var(--or); border-color: var(--or); }
+
+  /* Carte de visite en tete du fil (mobile) */
+  .visite { display: none; }
+
+  /* Planche DA */
+  .planche { padding: clamp(56px, 8vw, 110px) clamp(16px, 4vw, 56px); border-top: 1px solid var(--ligne); }
+  .planche h3 { font-family: var(--f-titre); font-weight: 400; font-size: clamp(32px, 4vw, 54px); margin: 10px 0 28px; }
+  .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--or-fonce); }
+  .nuancier { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+  .pastille { border-radius: 16px; overflow: hidden; background: #fff; border: 1px solid var(--ligne); }
+  .pastille div { height: 80px; }
+  .pastille p { padding: 10px 12px; font-size: 12px; }
+  .pastille b { display: block; }
+  .bloc { margin-top: 12px; padding: 24px; border-radius: 18px; background: #fff; border: 1px solid var(--ligne); max-width: 1000px; }
+  .bloc p + p { margin-top: 10px; }
+  .pied { padding: 30px clamp(16px, 4vw, 56px) 80px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-size: 14px; color: var(--gris); border-top: 1px solid var(--ligne); }
+  .badge { position: fixed; left: 12px; bottom: 12px; z-index: 70; padding: 8px 14px; border-radius: 999px; font-size: 11px; background: var(--encre); color: var(--or); }
+  .badge a { color: #fff; text-decoration: underline; margin-left: 6px; }
+
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; }
+    .marque { display: none; }
+    .chat { border-left: 0; }
+    .visite { display: block; align-self: stretch; border-radius: 22px; background: #fff; padding: 16px; box-shadow: 0 8px 24px rgba(20, 20, 20, .06); margin-bottom: 10px; animation: pop .5s var(--ease) both; }
+    .visite img { width: 70%; margin: 0 auto 8px; }
+    .visite p { font-family: var(--f-titre); font-size: 30px; line-height: 1.02; text-align: center; }
+    .bulle { max-width: 86%; }
+    .bulle--carte { width: 86%; }
+    .badge { left: auto; bottom: 86px; right: 8px; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; } .fil { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="maisons" viewBox="0 0 240 120">
+    <path d="M20 44a14 14 0 0 1 28 0Z" fill="#ecc23a"/>
+    <path d="M14 96 66 44l52 52" stroke="#ecc23a" stroke-width="10" fill="none"/>
+    <path d="M84 72 134 14l72 84" stroke="#fffdf8" stroke-width="12" fill="none"/>
+    <path d="M168 52l28-24 38 42" stroke="#ecc23a" stroke-width="8" fill="none"/>
+    <path d="M0 108C70 88 150 94 240 106" stroke="#fffdf8" stroke-width="8" fill="none"/>
+  </symbol>
+  <symbol id="i-wa" viewBox="0 0 24 24"><path d="M4 18.5 5.2 15A8 8 0 1 1 8.6 18.6Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 10.5c.5 1.8 2 3.3 3.8 3.9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+</svg>
+
+<div class="app">
+  <aside class="marque" aria-label="Light Résidence">
+    <img class="marque__logo" src="assets/logo-recadre.jpg" alt="Logo Light Résidence">
+    <div>
+      <h1>Le confort poussé <em>à son comble.</em></h1>
+      <p class="marque__sous">Appartements et résidences meublés à Abidjan, pour un court, un moyen ou un long séjour. Discutez avec nous : la réservation se prépare au fil de la conversation.</p>
+    </div>
+    <div>
+      <div class="defile" aria-hidden="true"><div class="defile__piste">
+        <span>Équipé</span><span>Calme</span><span>Propre</span><span>Paisible</span><span>Sécurisé</span>
+        <span>Équipé</span><span>Calme</span><span>Propre</span><span>Paisible</span><span>Sécurisé</span>
+      </div></div>
+      <div class="marque__bas" style="margin-top:18px"><span>WhatsApp · 07 59 57 39 29<br>Tél. · 05 46 82 34 44</span><span>Proposition de site<br>réalisée par Digifaz</span></div>
+    </div>
+  </aside>
+
+  <main class="chat" aria-label="Conversation avec Light Résidence">
+    <header class="chat__tete">
+      <span class="avatar"><svg aria-hidden="true"><use href="#maisons"/></svg></span>
+      <span><b>Light Résidence</b><small>Réservation sur WhatsApp</small></span>
+      <a href="tel:+2250546823444">Appeler</a>
+    </header>
+    <div class="fil" role="log" aria-live="polite" aria-label="Messages">
+      <div class="visite"><img src="assets/logo-recadre.jpg" alt="Logo Light Résidence"><p>Le confort poussé à son comble.</p></div>
+      <span class="date">Aujourd'hui</span>
+    </div>
+    <div class="reponses" aria-label="Réponses rapides"></div>
+  </main>
+</div>
+
+<section class="planche">
+  <p class="eyebrow">Planche de direction artistique · Piste B</p>
+  <h3>Conversation : le site qui vous répond</h3>
+  <div class="nuancier">
+    <div class="pastille"><div style="background:#f6f1e7"></div><p><b>Sable</b>#F6F1E7 · fond</p></div>
+    <div class="pastille"><div style="background:#fffdf8"></div><p><b>Papier</b>#FFFDF8 · bulles</p></div>
+    <div class="pastille"><div style="background:#141414"></div><p><b>Encre</b>#141414 · vos messages</p></div>
+    <div class="pastille"><div style="background:#ecc23a"></div><p><b>Or</b>#ECC23A · le logo</p></div>
+    <div class="pastille"><div style="background:#8a6a00"></div><p><b>Or foncé</b>#8A6A00 · petits textes</p></div>
+  </div>
+  <div class="bloc">
+    <p class="eyebrow">Expérience</p>
+    <p>Pas de menu, pas de longue page : on arrive dans une discussion. La résidence écrit, montre ses pièces en photos, fait comparer la salle à manger de jour et sous les LED (glisser le curseur), annonce son prix. Le visiteur répond d'un tap avec les réponses rapides. À la fin, une carte récapitule sa demande (logement, durée) et l'envoie sur WhatsApp, déjà rédigée. C'est exactement le canal de réservation de la résidence.</p>
+    <p>Typographies : Gloock (titres, prix) et Hanken Grotesk (messages). Aucun formulaire : rien n'est collecté, tout part vers WhatsApp.</p>
+  </div>
+</section>
+<footer class="pied"><span>Light Résidence · Abidjan</span><span>Proposition de site réalisée par Digifaz</span></footer>
+<p class="badge">Maquette · Piste B · Conversation<a href="index.html">Toutes les pistes</a></p>
+
+<script>
+  const reduit = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const fil = document.querySelector(".fil");
+  const zoneReponses = document.querySelector(".reponses");
+  const WA = "2250759573929";
+  const demande = { type: null, duree: null };
+  const pause = (ms) => new Promise((r) => setTimeout(r, reduit ? 0 : ms));
+  const descendre = () => (fil.scrollTop = fil.scrollHeight);
+
+  function ajouter(el) { fil.appendChild(el); descendre(); return el; }
+  function element(html, classe) { const d = document.createElement("div"); d.className = classe; d.innerHTML = html; return d; }
+
+  // La residence "ecrit" puis envoie son message
+  async function dire(html, classe = "bulle", attente = 650) {
+    const ecrit = ajouter(element("<i></i><i></i><i></i>", "bulle ecrit"));
+    ecrit.setAttribute("aria-hidden", "true");
+    await pause(attente);
+    ecrit.remove();
+    const b = ajouter(element(html, classe));
+    b.querySelectorAll("img").forEach((i) => i.addEventListener("load", descendre));
+    await pause(250);
+    return b;
+  }
+  function moi(texte) { ajouter(element(texte, "bulle bulle--moi")); }
+  function photo(src, alt, legende) {
+    return dire(`<figure><img src="${src}" alt="${alt}">${legende ? `<figcaption>${legende}</figcaption>` : ""}</figure>`, "bulle bulle--media", 900);
+  }
+  function proposer(choix) {
+    zoneReponses.innerHTML = "";
+    choix.forEach(([texte, action, or], i) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "reponse" + (or ? " reponse--or" : ""); b.textContent = texte;
+      b.style.animationDelay = i * 0.05 + "s";
+      b.addEventListener("click", async () => { zoneReponses.innerHTML = ""; moi(texte); await pause(300); action(); });
+      zoneReponses.appendChild(b);
+    });
+  }
+  const menu = () => proposer([
+    ["Faire la visite", visite], ["C'est combien ?", prix], ["Quels logements ?", logements], ["Réserver", reserver, true],
+  ].filter(([t]) => !deja.has(t) || t === "Réserver"));
+  const deja = new Set();
+
+  async function accueil() {
+    await dire("Bonjour, bienvenue chez <b>Light Résidence</b>.");
+    await dire("Vous cherchez un appartement meublé calme, propre et bien placé à Abidjan ?");
+    await photo("assets/salon-plafond-led-bleu.jpg", "Salon avec canapés en velours bleu et plafond éclairé en LED bleues", "Le salon, LED allumées");
+    await dire("Je vous fais visiter ?");
+    menu();
+  }
+
+  async function visite() {
+    deja.add("Faire la visite");
+    await photo("assets/salon-led-bleu-salle-a-manger.jpg", "Séjour ouvert : salon bleu et salle à manger", "Le séjour, ouvert sur la salle à manger");
+    await dire("La salle à manger change d'ambiance avec la lumière. Faites glisser pour comparer :");
+    const b = await dire(`
+      <div class="compare" style="--pos:50%">
+        <img src="assets/salle-a-manger-jour.jpg" alt="Salle à manger en lumière du jour">
+        <img class="compare__haut" src="assets/salle-a-manger-led-verte.jpg" alt="La même salle à manger éclairée en LED vertes">
+        <span class="compare__etiq" style="left:10px">Jour</span><span class="compare__etiq" style="right:10px">LED</span>
+        <span class="compare__ligne"></span><span class="compare__poignee" aria-hidden="true">⇆</span>
+        <input type="range" min="0" max="100" value="50" aria-label="Comparer la salle à manger de jour et sous les LED">
+      </div>`, "bulle bulle--media", 900);
+    const c = b.querySelector(".compare");
+    b.querySelector("input").addEventListener("input", (e) => c.style.setProperty("--pos", e.target.value + "%"));
+    await dire("Tous nos logements sont <b>équipés, calmes, propres, paisibles et sécurisés</b>.");
+    menu();
+  }
+
+  async function prix() {
+    deja.add("C'est combien ?");
+    await dire(`<span class="eyebrow">À partir de</span><p class="grand">20 000 F</p><small>les 24 heures</small>`, "bulle bulle--prix");
+    await dire("Court, moyen ou long séjour : demandez-nous le tarif exact pour votre durée.");
+    menu();
+  }
+
+  async function logements() {
+    deja.add("Quels logements ?");
+    await dire("Nous proposons des studios américains, des 2 pièces, des 3 pièces et des villas.");
+    await dire("Lequel vous intéresse ?");
+    choisirType();
+  }
+
+  function choisirType(ensuite) {
+    proposer(["Studio américain", "2 pièces", "3 pièces", "Villa"].map((t) => [t, async () => {
+      demande.type = t;
+      await dire(t === "Villa" ? "Très bon choix pour une famille ou un groupe." : "Noté, " + t.toLowerCase() + ".");
+      ensuite ? ensuite() : menu();
+    }]));
+  }
+
+  async function reserver() {
+    if (!demande.type) { await dire("Avec plaisir. Quel logement souhaitez-vous ?"); return choisirType(choisirDuree); }
+    choisirDuree();
+  }
+  async function choisirDuree() {
+    await dire("Pour combien de temps ?");
+    proposer(["Court séjour", "Moyen séjour", "Long séjour"].map((d) => [d, async () => { demande.duree = d.toLowerCase(); recap(); }]));
+  }
+  async function recap() {
+    const msg = `Bonjour Light Résidence, je souhaite réserver : ${demande.type}, ${demande.duree}.`;
+    await dire(`<h3>Votre demande</h3><dl><dt>Logement</dt><dd>${demande.type}</dd><dt>Séjour</dt><dd>${demande.duree}</dd><dt>Tarif</dt><dd>à partir de 20 000 F / 24 h</dd></dl>
+      <a class="envoyer" href="https://wa.me/${WA}?text=${encodeURIComponent(msg)}"><svg aria-hidden="true"><use href="#i-wa"/></svg>Envoyer sur WhatsApp</a>`, "bulle bulle--carte", 1000);
+    proposer([["Modifier ma demande", () => { demande.type = null; reserver(); }], ["Revoir la visite", visite]]);
+  }
+
+  accueil();
+</script>
+</body>
+</html>

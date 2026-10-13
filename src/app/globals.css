@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+/* Tokens du theme - piste B "Conversation" */
+@theme {
+  --color-sable: #f6f1e7;
+  --color-papier: #fffdf8;
+  --color-encre: #141414;
+  --color-gris: #6d675d;
+  --color-or: #ecc23a;
+  /* Variante contrastee de l'or pour les petits textes (AA) */
+  --color-or-fonce: #8a6a00;
+  --color-ligne: rgb(20 20 20 / 0.1);
+
+  --ease-rebond: cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+@theme inline {
+  --font-titre: var(--font-gloock), Georgia, serif;
+  --font-ui: var(--font-hanken), system-ui, sans-serif;
+}
+
+@utility gouttiere {
+  padding-inline: clamp(16px, 4vw, 56px);
+}
+
+@layer base {
+  html,
+  body {
+    background: var(--color-sable);
+    color: var(--color-encre);
+  }
+  body {
+    font-family: var(--font-ui);
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-encre);
+    outline-offset: 3px;
+  }
+}
+
+@layer components {
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-or-fonce);
+  }
+  /* Surlignage or sous un mot (comme un marqueur) */
+  .surligne {
+    background: linear-gradient(transparent 62%, var(--color-or) 62%, var(--color-or) 92%, transparent 92%);
+  }
+  /* Fond pointille du fil de discussion */
+  .fond-points {
+    background-image: radial-gradient(rgb(20 20 20 / 0.05) 1px, transparent 1.2px);
+    background-size: 18px 18px;
+  }
+}
+
+/* Apparition des bulles et des reponses */
+@media (prefers-reduced-motion: no-preference) {
+  .pop {
+    animation: pop 0.45s var(--ease-rebond) both;
+  }
+  .ecrit i {
+    animation: saut 1s infinite;
+  }
+  .ecrit i:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+  .ecrit i:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+  .defile {
+    animation: defile 26s linear infinite;
+  }
+}
+@keyframes pop {
+  from {
+    opacity: 0;
+    scale: 0.82;
+    translate: 0 10px;
+  }
+}
+@keyframes saut {
+  30% {
+    translate: 0 -5px;
+    opacity: 0.5;
+  }
+}
+@keyframes defile {
+  to {
+    translate: -50% 0;
+  }
+}

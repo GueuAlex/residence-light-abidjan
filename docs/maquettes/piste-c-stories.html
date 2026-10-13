@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Light Résidence · Piste C · Stories</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700..900&family=Figtree:wght@400..700&display=swap" rel="stylesheet">
+<style>
+  /* Tokens du theme - piste C */
+  :root {
+    --nuit: #07080b;
+    --or: #ecc23a;
+    --blanc: #ffffff;
+    --bleu: #3b6bff;
+    --vert: #25e59a;
+    --f-titre: "Big Shoulders Display", Impact, sans-serif;
+    --f-texte: "Figtree", system-ui, sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--nuit); color: var(--blanc); font-family: var(--f-texte); -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+  img { display: block; }
+  :focus-visible { outline: 2px solid var(--or); outline-offset: 3px; }
+
+  /* Scene : fond flou + lecteur */
+  .scene { position: relative; height: 100svh; min-height: 600px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: clamp(20px, 4vw, 64px); overflow: hidden; padding: 0 clamp(16px, 4vw, 56px); }
+  .fond { position: absolute; inset: -40px; z-index: 0; background: var(--nuit) center / cover; filter: blur(40px) brightness(.45) saturate(1.3); transition: background-image .6s; }
+  .cote { position: relative; z-index: 1; }
+  .cote--g h1 { font-family: var(--f-titre); font-weight: 900; text-transform: uppercase; font-size: clamp(48px, 6vw, 110px); line-height: .86; }
+  .cote--g h1 span { color: var(--or); }
+  .cote--g p { margin-top: 18px; max-width: 300px; opacity: .8; }
+  .sommaire { list-style: none; justify-self: end; display: grid; gap: 6px; }
+  .sommaire button { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 12px; opacity: .55; transition: opacity .3s, background .3s; text-align: left; }
+  .sommaire button[aria-current="true"] { opacity: 1; background: rgba(255, 255, 255, .08); }
+  .sommaire img, .sommaire i { width: 38px; height: 54px; border-radius: 8px; object-fit: cover; flex: none; background: var(--or); }
+  .aide { margin-top: 14px; font-size: 13px; opacity: .6; text-align: right; }
+
+  /* Lecteur de stories */
+  .lecteur { position: relative; z-index: 1; height: min(92svh, 860px); aspect-ratio: 9 / 16; border-radius: 26px; overflow: hidden; background: #000; box-shadow: 0 40px 100px rgba(0, 0, 0, .6); touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+  .barres { position: absolute; top: 12px; left: 12px; right: 12px; z-index: 5; display: flex; gap: 4px; }
+  .barres span { flex: 1; height: 3px; border-radius: 3px; background: rgba(255, 255, 255, .3); overflow: hidden; }
+  .barres span i { display: block; height: 100%; width: 100%; background: #fff; transform-origin: left; transform: scaleX(0); }
+  .entete { position: absolute; top: 24px; left: 12px; right: 12px; z-index: 5; display: flex; align-items: center; gap: 10px; font-size: 14px; }
+  .entete .avatar { width: 34px; height: 34px; border-radius: 50%; background: #000; border: 1.5px solid var(--or); display: grid; place-items: center; }
+  .entete .avatar svg { width: 24px; }
+  .entete b { font-weight: 700; }
+  .entete small { opacity: .7; }
+  .entete .pause { margin-left: auto; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: rgba(0, 0, 0, .35); }
+  .story { position: absolute; inset: 0; opacity: 0; visibility: hidden; }
+  .story.active { opacity: 1; visibility: visible; }
+  .story__photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .degrade { position: absolute; inset: 0; background: linear-gradient(rgba(0, 0, 0, .55), transparent 28%, transparent 55%, rgba(0, 0, 0, .8)); }
+  .texte { position: absolute; left: 20px; right: 20px; bottom: 96px; z-index: 2; }
+  .grand { font-family: var(--f-titre); font-weight: 900; text-transform: uppercase; font-size: clamp(54px, 7.4vh, 78px); line-height: .88; }
+  .petit { margin-top: 10px; font-size: 16px; opacity: .9; max-width: 28ch; }
+  .zone { position: absolute; top: 70px; bottom: 80px; z-index: 4; }
+  .zone--prec { left: 0; width: 32%; }
+  .zone--suiv { right: 0; width: 68%; }
+  .cta { position: absolute; left: 16px; right: 16px; bottom: 18px; z-index: 6; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 15px; border-radius: 999px; background: var(--or); color: #000; font-weight: 700; font-size: 16px; }
+  .cta svg { width: 20px; height: 20px; }
+  .lecteur.sur-or .cta { background: #000; color: var(--or); }
+  .lecteur.sur-or .entete { color: #000; }
+
+  /* Stories particulieres */
+  .story--logo { background: radial-gradient(80% 60% at 50% 40%, #1a1607, var(--nuit)); display: grid; place-items: center; text-align: center; }
+  .story--logo svg { width: 70%; color: #fff; overflow: visible; }
+  .story--logo .grand { margin-top: 18px; font-size: clamp(46px, 6.4vh, 66px); }
+  .story--logo .petit { margin: 10px auto 0; }
+  .story--types { background: var(--nuit); display: grid; align-content: center; padding: 0 22px; }
+  .story--types .ligne { font-family: var(--f-titre); font-weight: 900; text-transform: uppercase; font-size: clamp(56px, 8.4vh, 90px); line-height: .9; }
+  .story--types .ligne:nth-child(even) { color: transparent; -webkit-text-stroke: 2px var(--or); }
+  .story--prix { background: var(--or); color: #000; display: grid; align-content: center; padding: 0 22px; }
+  .story--prix .enorme { font-family: var(--f-titre); font-weight: 900; font-size: clamp(84px, min(17vh, 27vw), 170px); line-height: .82; white-space: nowrap; letter-spacing: -.01em; }
+  .story--prix .unite { font-family: var(--f-titre); font-weight: 800; font-size: 34px; text-transform: uppercase; }
+  .story--prix .duree { display: flex; gap: 8px; margin-top: 26px; flex-wrap: wrap; }
+  .story--prix .duree span { padding: 8px 14px; border-radius: 999px; border: 2px solid #000; font-weight: 700; }
+  .story--fin { background: radial-gradient(90% 60% at 50% 30%, #0f1a3a, var(--nuit)); display: grid; align-content: center; justify-items: center; text-align: center; gap: 14px; padding: 0 24px; }
+  .story--fin .revoir { padding: 10px 18px; border-radius: 999px; border: 1.5px solid rgba(255, 255, 255, .4); position: relative; z-index: 7; }
+  .flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+  .mots span { display: inline-block; margin-right: .2em; }
+
+  /* Planche DA */
+  .planche { background: #f4f2ee; color: #0b0b0b; padding: clamp(56px, 8vw, 110px) clamp(16px, 4vw, 56px); }
+  .planche h3 { font-family: var(--f-titre); font-weight: 900; text-transform: uppercase; font-size: clamp(40px, 5vw, 72px); line-height: .9; margin: 10px 0 28px; }
+  .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: #7a5f00; }
+  .nuancier { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+  .pastille { border-radius: 16px; overflow: hidden; background: #fff; border: 1px solid #e2ded6; }
+  .pastille div { height: 80px; }
+  .pastille p { padding: 10px 12px; font-size: 12px; }
+  .pastille b { display: block; }
+  .bloc { margin-top: 12px; padding: 24px; border-radius: 18px; background: #fff; border: 1px solid #e2ded6; max-width: 1000px; }
+  .bloc p + p { margin-top: 10px; }
+  .pied { padding: 30px clamp(16px, 4vw, 56px) 80px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-size: 14px; background: #f4f2ee; color: #555; }
+  .badge { position: fixed; right: 12px; bottom: 12px; z-index: 70; padding: 8px 14px; border-radius: 999px; font-size: 11px; background: #000; color: var(--or); border: 1px solid rgba(236, 194, 58, .4); }
+  .badge a { color: #fff; text-decoration: underline; margin-left: 6px; }
+
+  @media (max-width: 900px) {
+    .scene { grid-template-columns: 1fr; padding: 0; min-height: 0; }
+    .cote { display: none; }
+    .lecteur { height: 100svh; width: 100%; aspect-ratio: auto; border-radius: 0; }
+    .badge { bottom: auto; top: 64px; right: 8px; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-wa" viewBox="0 0 24 24"><path d="M4 18.5 5.2 15A8 8 0 1 1 8.6 18.6Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 10.5c.5 1.8 2 3.3 3.8 3.9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="mini" viewBox="0 0 240 120"><path d="M14 96 66 44l52 52" stroke="#ecc23a" stroke-width="12" fill="none"/><path d="M84 72 134 14l72 84" stroke="#fff" stroke-width="14" fill="none"/><path d="M168 52l28-24 38 42" stroke="#ecc23a" stroke-width="10" fill="none"/></symbol>
+</svg>
+
+<section class="scene" aria-label="Light Résidence en stories">
+  <div class="fond" aria-hidden="true"></div>
+  <div class="cote cote--g">
+    <h1>Light<br><span>Résidence</span></h1>
+    <p>Appartements et résidences meublés à Abidjan. Visitez-nous comme sur votre téléphone : touchez pour avancer, maintenez pour mettre en pause.</p>
+  </div>
+
+  <div class="lecteur" tabindex="0" aria-roledescription="lecteur de stories" aria-label="Stories de Light Résidence. Flèches gauche et droite pour naviguer, espace pour mettre en pause.">
+    <div class="barres" aria-hidden="true"></div>
+    <div class="entete">
+      <span class="avatar"><svg aria-hidden="true"><use href="#mini"/></svg></span>
+      <span><b>Light Résidence</b> <small>· Abidjan</small></span>
+      <button class="pause" type="button" aria-label="Mettre en pause">❚❚</button>
+    </div>
+
+    <!-- 1. Logo -->
+    <article class="story story--logo" data-duree="4.5" data-fond="#1a1607" aria-label="Light Résidence">
+      <div>
+        <svg viewBox="0 0 240 130" aria-hidden="true">
+          <path class="trace" d="M20 44a14 14 0 0 1 28 0Z" fill="none" stroke="#ecc23a" stroke-width="4"/>
+          <path class="trace" d="M14 96 66 44l52 52" stroke="#ecc23a" stroke-width="7" fill="none"/>
+          <path class="trace" d="M84 72 134 14l72 84" stroke="currentColor" stroke-width="9" fill="none"/>
+          <path class="trace" d="M104 46V22h10v12" stroke="currentColor" stroke-width="5" fill="none"/>
+          <path class="trace" d="M168 52l28-24 38 42" stroke="#ecc23a" stroke-width="6" fill="none"/>
+          <path class="trace" d="M0 106C70 86 150 92 240 104" stroke="currentColor" stroke-width="6" fill="none"/>
+          <path class="trace" d="M24 118C96 104 166 106 232 114" stroke="#ecc23a" stroke-width="4" fill="none"/>
+        </svg>
+        <p class="grand anime">Light Résidence</p>
+        <p class="petit anime">Le confort poussé à son comble.</p>
+      </div>
+    </article>
+
+    <!-- 2. Salon -->
+    <article class="story" data-duree="5" data-fond="url(assets/salon-plafond-led-bleu.jpg)" aria-label="Le salon">
+      <img class="story__photo kb" src="assets/salon-plafond-led-bleu.jpg" alt="Salon avec canapés en velours bleu et plafond éclairé en LED bleues">
+      <div class="degrade"></div>
+      <div class="texte"><p class="grand anime">Le salon</p><p class="petit anime">Velours bleu, plafond LED, télé murale et clim.</p></div>
+    </article>
+
+    <!-- 3. Salle a manger : jour puis LED -->
+    <article class="story story--lumiere" data-duree="6" data-fond="url(assets/salle-a-manger-jour.jpg)" aria-label="La salle à manger, de jour puis sous les LED">
+      <img class="story__photo kb" src="assets/salle-a-manger-jour.jpg" alt="Salle à manger en lumière du jour">
+      <img class="story__photo led" src="assets/salle-a-manger-led-verte.jpg" alt="La même salle à manger éclairée en LED vertes" style="opacity:0">
+      <div class="flash"></div>
+      <div class="degrade"></div>
+      <div class="texte"><p class="grand"><span class="avant">De jour…</span></p><p class="petit anime">La salle à manger, quatre places.</p></div>
+    </article>
+
+    <!-- 4. Valeurs -->
+    <article class="story" data-duree="5" data-fond="url(assets/salon-led-bleu-salle-a-manger.jpg)" aria-label="Équipé, calme, propre, paisible, sécurisé">
+      <img class="story__photo kb" src="assets/salon-led-bleu-salle-a-manger.jpg" alt="Séjour ouvert, salon bleu et salle à manger éclairés en LED" style="object-position:35% 50%">
+      <div class="degrade"></div>
+      <div class="texte"><p class="grand mots"><span>Équipé.</span><span>Calme.</span><span>Propre.</span><span>Paisible.</span><span>Sécurisé.</span></p></div>
+    </article>
+
+    <!-- 5. Types -->
+    <article class="story story--types" data-duree="4.5" data-fond="#141414" aria-label="Studio américain, 2 pièces, 3 pièces, villa">
+      <p class="petit anime" style="opacity:.7;margin-bottom:12px">Nos logements</p>
+      <p class="ligne">Studio américain</p><p class="ligne">2 pièces</p><p class="ligne">3 pièces</p><p class="ligne">Villa</p>
+    </article>
+
+    <!-- 6. Prix -->
+    <article class="story story--prix" data-duree="5" data-fond="#ecc23a" aria-label="À partir de 20 000 F les 24 heures">
+      <p class="unite anime">À partir de</p>
+      <p class="enorme">20 000<span style="font-size:.4em"> F</span></p>
+      <p class="unite anime">les 24 heures</p>
+      <div class="duree"><span>Court</span><span>Moyen</span><span>Long séjour</span></div>
+    </article>
+
+    <!-- 7. Fin -->
+    <article class="story story--fin" data-duree="0" data-fond="#0f1a3a" aria-label="Réserver">
+      <p class="grand anime" style="font-size:clamp(50px,7vh,72px)">On vous garde<br>les clés ?</p>
+      <p class="petit anime" style="margin:0 auto">Réservation sur WhatsApp au 07 59 57 39 29, appels au 05 46 82 34 44.</p>
+      <button class="revoir anime" type="button">↺ Revoir</button>
+    </article>
+
+    <button class="zone zone--prec" type="button" aria-label="Story précédente"></button>
+    <button class="zone zone--suiv" type="button" aria-label="Story suivante"></button>
+    <a class="cta" href="https://wa.me/2250759573929?text=Bonjour%20Light%20R%C3%A9sidence%2C%20je%20souhaite%20r%C3%A9server%20un%20appartement."><svg aria-hidden="true"><use href="#i-wa"/></svg>Réserver sur WhatsApp</a>
+  </div>
+
+  <div class="cote">
+    <ol class="sommaire" aria-label="Sommaire des stories"></ol>
+    <p class="aide">← → pour naviguer · Espace pour pause</p>
+  </div>
+</section>
+
+<section class="planche">
+  <p class="eyebrow">Planche de direction artistique · Piste C</p>
+  <h3>Stories : la résidence au format de votre téléphone</h3>
+  <div class="nuancier">
+    <div class="pastille"><div style="background:#07080b"></div><p><b>Nuit</b>#07080B · fond</p></div>
+    <div class="pastille"><div style="background:#ecc23a"></div><p><b>Or</b>#ECC23A · le logo</p></div>
+    <div class="pastille"><div style="background:#3b6bff"></div><p><b>Bleu LED</b>#3B6BFF</p></div>
+    <div class="pastille"><div style="background:#25e59a"></div><p><b>Vert LED</b>#25E59A</p></div>
+    <div class="pastille"><div style="background:#ffffff"></div><p><b>Blanc</b>#FFFFFF · textes</p></div>
+  </div>
+  <div class="bloc">
+    <p class="eyebrow">Expérience</p>
+    <p>Le site s'ouvre comme une story Instagram ou TikTok, le format que la clientèle consulte chaque jour : plein écran sur mobile, barres de progression, tap à droite pour avancer, à gauche pour revenir, appui long pour mettre en pause. Le logo se dessine, le salon apparaît en zoom lent, la salle à manger s'allume en LED vertes avec un flash, les valeurs tombent mot par mot, le prix occupe tout l'écran. Le bouton « Réserver sur WhatsApp » reste toujours visible.</p>
+    <p>Sur ordinateur, le lecteur est au centre, sur un fond flou tiré de la photo en cours, avec un sommaire cliquable et la navigation au clavier. Typographies : Big Shoulders Display (titres condensés) et Figtree (textes). Les photos de 720 px passent bien en plein écran sur téléphone.</p>
+  </div>
+</section>
+<footer class="pied"><span>Light Résidence · Abidjan · WhatsApp 07 59 57 39 29</span><span>Proposition de site réalisée par Digifaz</span></footer>
+<p class="badge">Maquette · Piste C · Stories<a href="index.html">Toutes les pistes</a></p>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/DrawSVGPlugin.min.js"></script>
+<script>
+  gsap.registerPlugin(DrawSVGPlugin);
+  const reduit = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const lecteur = document.querySelector(".lecteur");
+  const stories = [...document.querySelectorAll(".story")];
+  const barres = document.querySelector(".barres");
+  const fond = document.querySelector(".fond");
+  const sommaire = document.querySelector(".sommaire");
+  const btnPause = document.querySelector(".pause");
+  let index = 0, ecoule = 0, enPause = false, animation;
+
+  // Barres de progression et sommaire
+  stories.forEach((s, i) => {
+    barres.insertAdjacentHTML("beforeend", "<span><i></i></span>");
+    const img = s.querySelector(".story__photo");
+    const li = document.createElement("li");
+    li.innerHTML = `<button type="button">${img ? `<img src="${img.src}" alt="">` : `<i style="background:${s.dataset.fond}"></i>`}<span>${s.getAttribute("aria-label")}</span></button>`;
+    li.querySelector("button").addEventListener("click", () => aller(i));
+    sommaire.appendChild(li);
+  });
+  const remplissages = [...barres.querySelectorAll("i")];
+
+  // Animation d'entree propre a chaque story
+  function jouer(s) {
+    animation?.kill();
+    const tl = gsap.timeline();
+    if (reduit) return (animation = tl);
+    const animes = s.querySelectorAll(".anime");
+    if (animes.length) tl.fromTo(animes, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease: "expo.out", stagger: 0.12 }, 0.15);
+    const kb = s.querySelector(".kb");
+    if (kb) tl.fromTo(kb, { scale: 1.14 }, { scale: 1, duration: +s.dataset.duree, ease: "none" }, 0);
+    if (s.classList.contains("story--logo")) tl.fromTo(s.querySelectorAll(".trace"), { drawSVG: 0 }, { drawSVG: "100%", duration: 1.4, ease: "power2.inOut", stagger: 0.12 }, 0);
+    if (s.classList.contains("story--lumiere")) {
+      const avant = s.querySelector(".avant");
+      tl.set(s.querySelector(".led"), { opacity: 0 }, 0).call(() => (avant.textContent = "De jour…"), null, 0)
+        .to(s.querySelector(".flash"), { opacity: 0.9, duration: 0.08, yoyo: true, repeat: 1 }, 2.6)
+        .set(s.querySelector(".led"), { opacity: 1 }, 2.68)
+        .call(() => (avant.textContent = "…et le soir."), null, 2.68)
+        .fromTo(avant, { scale: 1.2 }, { scale: 1, duration: 0.5, ease: "back.out(2)" }, 2.68);
+    }
+    if (s.querySelector(".mots")) tl.fromTo(s.querySelectorAll(".mots span"), { y: 60, opacity: 0, rotation: 6 }, { y: 0, opacity: 1, rotation: 0, duration: 0.6, ease: "back.out(1.6)", stagger: 0.55 }, 0.2);
+    if (s.classList.contains("story--types")) tl.fromTo(s.querySelectorAll(".ligne"), { xPercent: -110 }, { xPercent: 0, duration: 0.7, ease: "expo.out", stagger: 0.25 }, 0.2);
+    if (s.classList.contains("story--prix")) tl.fromTo(s.querySelector(".enorme"), { scale: 0.4, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.8, ease: "back.out(1.8)" }, 0.2)
+      .fromTo(s.querySelectorAll(".duree span"), { y: 20, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.1, duration: 0.5 }, 0.9);
+    animation = tl;
+  }
+
+  function aller(i) {
+    index = Math.max(0, Math.min(stories.length - 1, i));
+    ecoule = 0;
+    stories.forEach((s, k) => s.classList.toggle("active", k === index));
+    remplissages.forEach((r, k) => (r.style.transform = `scaleX(${k < index ? 1 : 0})`));
+    sommaire.querySelectorAll("button").forEach((b, k) => b.setAttribute("aria-current", k === index));
+    const f = stories[index].dataset.fond;
+    fond.style.background = f.startsWith("url") ? `${f} center / cover` : f;
+    lecteur.classList.toggle("sur-or", stories[index].classList.contains("story--prix"));
+    jouer(stories[index]);
+    if (enPause) animation?.pause();
+  }
+
+  // Minuterie : la story avance seule
+  let dernier = performance.now();
+  function boucle(t) {
+    const dt = (t - dernier) / 1000; dernier = t;
+    const duree = +stories[index].dataset.duree;
+    if (!enPause && duree > 0) {
+      ecoule += dt;
+      remplissages[index].style.transform = `scaleX(${Math.min(ecoule / duree, 1)})`;
+      if (ecoule >= duree) aller(index + 1);
+    }
+    requestAnimationFrame(boucle);
+  }
+  requestAnimationFrame(boucle);
+
+  function mettreEnPause(p) {
+    enPause = p;
+    btnPause.textContent = p ? "▶" : "❚❚";
+    btnPause.setAttribute("aria-label", p ? "Reprendre" : "Mettre en pause");
+    p ? animation?.pause() : animation?.resume();
+  }
+
+  // Tap pour naviguer, appui long pour mettre en pause
+  let appui, depart;
+  document.querySelectorAll(".zone").forEach((z) => {
+    z.addEventListener("pointerdown", (e) => { depart = { x: e.clientX, y: e.clientY, t: Date.now() }; appui = setTimeout(() => mettreEnPause(true), 220); });
+    z.addEventListener("pointerup", (e) => {
+      clearTimeout(appui);
+      const long = Date.now() - depart.t > 220;
+      const bouge = Math.hypot(e.clientX - depart.x, e.clientY - depart.y) > 12;
+      if (long) return mettreEnPause(false);
+      if (!bouge) aller(index + (z.classList.contains("zone--suiv") ? 1 : -1));
+    });
+    z.addEventListener("pointercancel", () => { clearTimeout(appui); if (enPause) mettreEnPause(false); });
+    z.addEventListener("click", (e) => { if (e.detail === 0) aller(index + (z.classList.contains("zone--suiv") ? 1 : -1)); });
+  });
+  btnPause.addEventListener("click", () => mettreEnPause(!enPause));
+  document.querySelector(".revoir").addEventListener("click", () => aller(0));
+  lecteur.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowRight") aller(index + 1);
+    if (e.key === "ArrowLeft") aller(index - 1);
+    if (e.key === " ") { e.preventDefault(); mettreEnPause(!enPause); }
+  });
+  // Pause quand le lecteur sort de l'ecran ou que l'onglet est cache
+  new IntersectionObserver(([e]) => { if (!e.isIntersecting && !enPause) mettreEnPause(true); }).observe(lecteur);
+  document.addEventListener("visibilitychange", () => { if (document.hidden && !enPause) mettreEnPause(true); });
+  aller(0);
+</script>
+</body>
+</html>
