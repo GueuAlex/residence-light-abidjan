@@ -56,7 +56,7 @@
   - Lighthouse mobile sur la démo : performance 96 à 98, accessibilité 100, bonnes pratiques 100 ; LCP 2,0 à 2,3 s ; CLS 0 ;
   - repo GitHub créé et démo déployée sur Vercel.
 - Décisions : pas de librairie d'animation (voir les exceptions).
-- Point ouvert : `vercel git connect` attend que l'utilisateur autorise le repo dans l'application GitHub de Vercel ; d'ici là, redéployer avec `vercel --prod --yes` après chaque push.
+- Redéploiement automatique branché (`vercel git connect`, après autorisation du repo par l'utilisateur) : chaque push sur `main` met la démo à jour.
 - Prochaine étape : l'utilisateur envoie le lien au propriétaire. Ensuite, intégrer les infos manquantes (quartier, tarifs par type et par durée, rôle du 05 46 82 34 44, logo vectoriel, photos HD) dans `src/content/site.ts`, et ajouter des sujets à la conversation si besoin (« C'est où ? » dès que le quartier est connu).
 
 ### 2026-10-13 (1)
